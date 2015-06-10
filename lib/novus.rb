@@ -20,29 +20,35 @@ class MathMachine
   end
 
   private
-  def add
+  def calculate(int_arr, operand)
+    return int_arr.inject(&operand)
   end
 
-  def divide
-  end
+  def check_operands(split_input, operands)
+    split_input.each_with_index do |char, idx|
+      if operands.include?(char)
+        # perform operations on preceeding and succeeding characters
+        # delete characters from the array
+        int_arr = [split_input[idx - 1].to_i, split_input.delete_at(idx + 1).to_i]
+        operand = split_input.delete_at(idx)
+        split_input[idx - 1] = calculate(int_arr, operand.to_sym)
+      end
+    end
 
-  def multiply
+    return split_input
   end
 
   # Order of Operations is: Multiply, Divide, Add, Subtract. Left to Right.
-  def parse_input(input) ### '1+2', '1'
-    #split on operators? or parse through by character and build a stack?
-    @operators.each do |op|
-      elements = input.split(op.to_s) ### '[1, 2]', '[1]'
+  def parse_input(input)
+    split_input = input.split('')
 
-      if elements.length > 1 ### 2, 1
-        @result = elements.map do |el|
-          parse_input(el) ### 1
-        end.inject(op)
-      else
-        return elements[0].to_i ### 1
-      end
-    end
+    # Perform first pass left to right, execute any Multiplication & Divsion
+    split_input = check_operands(split_input, ['*', '/'])
+
+    # Perform second pass left to right, execute any Addition & Subtraction
+    split_input = check_operands(split_input, ['+', '-'])
+
+    @result = split_input.first
   end
 
   def render_greeting
@@ -65,8 +71,5 @@ class MathMachine
     else
       puts "Invalid Input. Please Try Again."
     end
-  end
-
-  def subtract
   end
 end
