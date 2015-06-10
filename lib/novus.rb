@@ -21,26 +21,33 @@ class MathMachine
 
   private
   def calculate(int_arr, operand)
-    return int_arr.inject(&operand)
+    int_arr.inject(&operand)
   end
 
   def check_operands(split_input, operands)
+    flag = false
+
     split_input.each_with_index do |char, idx|
       if operands.include?(char)
         # perform operations on preceeding and succeeding characters
         # delete characters from the array
-        int_arr = [split_input[idx - 1].to_i, split_input.delete_at(idx + 1).to_i]
+        int_arr = [split_input[idx - 1].to_f, split_input.delete_at(idx + 1).to_f]
         operand = split_input.delete_at(idx)
         split_input[idx - 1] = calculate(int_arr, operand.to_sym)
+        flag = true
       end
     end
 
-    return split_input
+    if flag
+      return check_operands(split_input, operands)
+    else
+      return split_input
+    end
   end
 
   # Order of Operations is: Multiply, Divide, Add, Subtract. Left to Right.
   def parse_input(input)
-    split_input = input.split('')
+    split_input = input.split(/([\+\/\-\*])/).each_slice(1).map(&:join)
 
     # Perform first pass left to right, execute any Multiplication & Divsion
     split_input = check_operands(split_input, ['*', '/'])
@@ -48,7 +55,7 @@ class MathMachine
     # Perform second pass left to right, execute any Addition & Subtraction
     split_input = check_operands(split_input, ['+', '-'])
 
-    @result = split_input.first
+    @result = split_input.first.to_i if split_input.first.is_a?(Float)
   end
 
   def render_greeting
@@ -73,3 +80,5 @@ class MathMachine
     end
   end
 end
+
+m = MathMachine.new
