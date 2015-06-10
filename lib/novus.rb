@@ -1,6 +1,7 @@
 class MathMachine
   def initialize(operators=['+','-','*','/'])
     @operators = operators
+    @result = 'Invalid Input. Please Try Again.'
     self.run
   end
 
@@ -26,8 +27,10 @@ class MathMachine
   def multiply
   end
 
+  # Order of Operations is: Multiply, Divide, Add, Subtract. Left to Right.
   def parse_input(input)
     puts "Parsing input: " + input
+    #split on operators? or parse through by character and build a stack?
     render_result
   end
 
@@ -47,6 +50,7 @@ class MathMachine
 
   def render_result
 
+    puts @result
   end
 
   def subtract
