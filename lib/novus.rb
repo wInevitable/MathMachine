@@ -1,22 +1,25 @@
 class MathMachine
-  def initialize(operators=['+', '-', '*', '/'])
-    @operators = operators
+  def initialize()
+    @operators = ['+', '-', '*', '/'].join('\\')
     @result = nil
-    self.run
   end
 
+  # The sole Public method of the class.
+  # Performs a REPL
   def run
     render_greeting
-    @input = gets.chomp
+    @input = $stdin.gets.chomp
 
     until @input == 'quit'
-      puts "Parsing input..."
       parse_input(@input)
       render_result
-      @input = gets.chomp
+      @input = $stdin.gets.chomp
     end
+  end
 
-    puts "Have a Nice Day!"
+  # Here for RSPEC testing
+  def public_parse_input(input)
+    parse_input(input)
   end
 
   private
@@ -34,7 +37,7 @@ class MathMachine
     split_input.each_with_index do |char, idx|
       if operands.include?(char)
         # perform operations on preceeding and succeeding characters
-        # delete characters from the array
+        # delete previous characters from the array
         int_arr = [split_input[idx - 1].to_f, split_input.delete_at(idx + 1).to_f]
         operand = split_input.delete_at(idx)
         split_input[idx - 1] = calculate(int_arr, operand.to_sym)
@@ -43,17 +46,18 @@ class MathMachine
     end
 
     if flag
-      return check_operands(split_input, operands)
+      return check_operands(split_input, operands) # recursive call
     else
       return split_input
     end
   end
 
   # Parses the given string and returns the result of any operations
+  # TODO combine the two check_operands steps into one
   def parse_input(input)
     # Split the string on our chosen operands, keeping all characters
     # i.e. '1+23/12' becomes ['1', '+', '23', '/', '12']
-    split_input = input.split(/([\+\/\-\*])/).each_slice(1).map(&:join)
+    split_input = input.split(/([#{Regexp.quote(@operators)}])/).each_slice(1).map(&:join)
 
     # Order of Operations is: Multiply, Divide, Add, Subtract. Left to Right.
     # Perform first pass Left to Right, execute any Multiplication & Divsion
@@ -83,11 +87,15 @@ class MathMachine
   # Displays the Result. If none, displays an Error Message
   def render_result
     if @result
-      puts @input + ' = ' + @result.to_s
+      $stdout.puts @result.to_s
+      @result = nil
     else
-      puts "Invalid Input. Please Try Again."
+      $stdout.puts "Invalid Input. Please Try Again."
     end
   end
 end
 
-m = MathMachine.new
+if ENV['MODE'] != 'TEST'
+  m = MathMachine.new
+  m.run
+end
