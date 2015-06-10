@@ -1,20 +1,22 @@
 class MathMachine
-  def initialize(operators=['+','-','*','/'])
+  def initialize(operators=[:+, :-, :*, :/])
     @operators = operators
-    @result = 'Invalid Input. Please Try Again.'
+    @result = nil
     self.run
   end
 
   def run
     render_greeting
-    input = gets.chomp
+    @input = gets.chomp
 
-    until input == 'quit'
-      parse_input(input)
-      input = gets.chomp
+    until @input == 'quit'
+      puts "Parsing input..."
+      parse_input(@input)
+      render_result
+      @input = gets.chomp
     end
 
-    return "Have a Nice Day!"
+    puts "Have a Nice Day!"
   end
 
   private
@@ -28,10 +30,19 @@ class MathMachine
   end
 
   # Order of Operations is: Multiply, Divide, Add, Subtract. Left to Right.
-  def parse_input(input)
-    puts "Parsing input: " + input
+  def parse_input(input) ### '1+2', '1'
     #split on operators? or parse through by character and build a stack?
-    render_result
+    @operators.each do |op|
+      elements = input.split(op.to_s) ### '[1, 2]', '[1]'
+
+      if elements.length > 1 ### 2, 1
+        @result = elements.map do |el|
+          parse_input(el) ### 1
+        end.inject(op)
+      else
+        return elements[0].to_i ### 1
+      end
+    end
   end
 
   def render_greeting
@@ -49,8 +60,11 @@ class MathMachine
   end
 
   def render_result
-
-    puts @result
+    if @result
+      puts @input + ' = ' + @result.to_s
+    else
+      puts "Invalid Input. Please Try Again."
+    end
   end
 
   def subtract
