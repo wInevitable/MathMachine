@@ -1,4 +1,8 @@
-# Math Machine Instructions
+# Math Machine
+
+Your friendly neighborhood Ruby-licious calculator.
+
+### Instructions
 * Run 'ruby lib/novus.rb' from the root directory.
 	* Enter any number of arithmetic commands as strings. (i.e. '1+2' or '3*4')
 	* 'quit' exits the program.

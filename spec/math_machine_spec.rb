@@ -1,7 +1,7 @@
 ENV['MODE'] = 'TEST'
 
 require 'rspec'
-require 'novus'
+require 'math_machine'
 
 describe MathMachine do
   subject(:math_machine) { MathMachine.new }

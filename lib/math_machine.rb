@@ -1,6 +1,8 @@
+require 'set'
+
 class MathMachine
   def initialize()
-    @operators = ['+', '-', '*', '/'].join('\\')
+    @operators = [{ 1 => ['*', '/'] }, { 2 => ['+', '-'] }]
     @result = nil
   end
 
@@ -31,40 +33,41 @@ class MathMachine
 
   # Passes over Parsed Input, on reaching an Operand:
   # Apply it to preceeding and succeeding Numbers
-  def check_operands(split_input, operands)
+  def check_operands(split_input)
     flag = false
 
-    split_input.each_with_index do |char, idx|
-      if operands.include?(char)
-        # perform operations on preceeding and succeeding characters
-        # delete previous characters from the array
-        int_arr = [split_input[idx - 1].to_f, split_input.delete_at(idx + 1).to_f]
-        operand = split_input.delete_at(idx)
-        split_input[idx - 1] = calculate(int_arr, operand.to_sym)
-        flag = true
+    @operators.each do |op_level|
+      vals = op_level.values.first # i.e. ['*','/']
+
+      # grab all indices for that level of order of operations
+      indices = split_input.each_with_index.select { |char, idx| vals.include?(char) }.map { |pair| pair[1] }
+
+      # execute arithmetic at those indices on that level
+      indices.each do |idx|
+        if idx > 0
+          # perform operations on preceeding and succeeding characters
+          # delete previous characters from the array
+          int_arr = [split_input[idx - 1].to_f, split_input.delete_at(idx + 1).to_f]
+          operand = split_input.delete_at(idx)
+          split_input[idx - 1] = calculate(int_arr, operand.to_sym)
+          indices.map! { |int| int - 2 } # reduce any remaining indices!
+          flag = true
+        end
       end
     end
 
-    if flag
-      return check_operands(split_input, operands) # recursive call
-    else
-      return split_input
-    end
+    return split_input
   end
 
   # Parses the given string and returns the result of any operations
-  # TODO combine the two check_operands steps into one
   def parse_input(input)
     # Split the string on our chosen operands, keeping all characters
     # i.e. '1+23/12' becomes ['1', '+', '23', '/', '12']
-    split_input = input.split(/([#{Regexp.quote(@operators)}])/).each_slice(1).map(&:join)
+    ops = @operators.map{ |el| el.values.join('\\') }.join('\\')
+    split_input = input.split(/([#{Regexp.quote(ops)}])/).each_slice(1).map(&:join)
 
     # Order of Operations is: Multiply, Divide, Add, Subtract. Left to Right.
-    # Perform first pass Left to Right, execute any Multiplication & Divsion
-    split_input = check_operands(split_input, ['*', '/'])
-
-    # Perform second pass Left to Right, execute any Addition & Subtraction
-    split_input = check_operands(split_input, ['+', '-'])
+    split_input = check_operands(split_input)
 
     @result = split_input.first.to_i if split_input.first.is_a?(Float)
   end
